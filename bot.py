@@ -31,7 +31,7 @@ class Bot:
 				print(user_id)
 			if self.add(user_id):
 				print('User {} added'.format(user_id))
-				if self.db.update_friend_status(1, user_id=user_id):
+				if self.db.update_friend_status(1, user_id):
 					print('User friend status updated for user {}'.format(user_id))
 			else:
 				print('User {} was NOT added'.format(user_id))

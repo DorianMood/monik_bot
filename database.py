@@ -39,9 +39,10 @@ class DataBase():
 			return False
 		c = self.conn.cursor()
 		if user_id:
-			command = "UPDATE users SET added={} WHERE user_id={}".format(new_status, user_id)
+			command = "UPDATE users SET added={} WHERE user_id='{}'".format(new_status, user_id)
 		if _id:
 			command = "UPDATE users SET added={} WHERE id={}".format(new_status, _id)
+		print(command)
 		c.execute(command)
 		return True
 	def get(self, user_id):
