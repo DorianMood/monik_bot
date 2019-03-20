@@ -14,7 +14,8 @@ def hello():
 def add():
 	data = request.get_json()
 	db = DataBase()
-	db.add(data['link'])
+	user_name = data['link'].split('/')[-1]
+	db.add(user_name)
 	return jsonify({'success': True})
 
 @app.route('/get', methods=['GET'])
