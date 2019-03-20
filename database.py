@@ -5,7 +5,7 @@ CREATE_TABLES_SQL = '''
 	CREATE TABLE IF NOT EXISTS users (
 		id integer PRIMARY KEY AUTOINCREMENT,
 		user_id text NOT NULL,
-		added boolean DEFAULT false
+		added integer DEFAULT 0
 	);
 '''
 
@@ -50,7 +50,7 @@ class DataBase():
 		return c.fetchone()
 	def get_all(self):
 		c = self.conn.cursor()
-		c.execute("SELECT * FROM users")
+		c.execute("SELECT * FROM users WHERE added=0")
 		return c.fetchall()
 	def get_top(self, amount=10):
 		c = self.conn.cursor()
