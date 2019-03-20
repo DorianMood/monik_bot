@@ -4,7 +4,8 @@ DATABASE_FILE_NAME = 'users.db'
 CREATE_TABLES_SQL = '''
 	CREATE TABLE IF NOT EXISTS users (
 		id integer PRIMARY KEY AUTOINCREMENT,
-		user_id text NOT NULL
+		user_id text NOT NULL,
+		added boolean DEFAULT false
 	);
 '''
 
@@ -15,7 +16,6 @@ class DataBase():
 			self.create_tables()
 		except Exception as e:
 			print(e)
-
 	def create_connection(self):
 		try:
 			return sqlite3.connect(DATABASE_FILE_NAME)
@@ -34,6 +34,16 @@ class DataBase():
 		c = self.conn.cursor()
 		c.execute("INSERT INTO users (user_id) VALUES ('{}')".format(user_id))
 		self.conn.commit()
+	def update_friend_status(self, new_status, user_id=None, _id=None):
+		if not user_id and not _id:
+			return False
+		c = self.conn.cursor()
+		if user_id:
+			command = "UPDATE users SET added={} WHERE user_id={}".format(new_status, user_id)
+		if _id:
+			command = "UPDATE users SET added={} WHERE id={}".format(new_status, _id)
+		c.execute(command)
+		return True
 	def get(self, user_id):
 		c = self.conn.cursor()
 		c.execute("SELECT * FROM users WHERE user_id = '{}'".format(user_id))
