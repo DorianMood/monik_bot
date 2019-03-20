@@ -42,8 +42,8 @@ class DataBase():
 			command = "UPDATE users SET added={} WHERE user_id='{}'".format(new_status, user_id)
 		if _id:
 			command = "UPDATE users SET added={} WHERE id={}".format(new_status, _id)
-		print(command)
 		c.execute(command)
+		self.conn.commit()
 		return True
 	def get(self, user_id):
 		c = self.conn.cursor()
@@ -55,7 +55,7 @@ class DataBase():
 		return c.fetchall()
 	def get_top(self, amount=10):
 		c = self.conn.cursor()
-		c.execute("SELECT * FROM users")
+		c.execute("SELECT * FROM users WHERE added=0")
 		return c.fetchmany(amount)
 	def get_page(self, limit=10, page=0):
 		users = self.get_all()
