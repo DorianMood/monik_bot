@@ -100,8 +100,8 @@ class Bot:
 		return self.add(user)
 	def get_number_by_id(self, user_id, token=None):
 		api = API(
-			token if token else self.ACCESS_TOKEN,
-			proxy=self.proxy[random.randint(0, len(self.proxy) - 1)]
+			token if token else self.ACCESS_TOKEN
+			#proxy=self.proxy[random.randint(0, len(self.proxy) - 1)]
 		)
 		response = api.users_get(user_id)
 		try:
@@ -126,7 +126,7 @@ class Bot:
 		except Exception as e:
 			error_code = response['error']['error_code']
 			print(response)
-			status = error_code if not error_code in [1, 2, 4] else 0
+			status = error_code if not error_code in [1, 2, 4, 177] else 0
 			return status
 	def add(self, user, token=None):
 		print('Processing user {}'.format(user))
@@ -145,9 +145,10 @@ class Bot:
 		print(datetime.datetime.now())
 		for account in self.accounts:
 			print('\nACCOUNT : {}'.format(account.user_id))
-			user = self.next_user()[0]
-			if self.add(user, token=account.token):
-				self.db.update_friend_status(1, user)
+			user = self.next_user()
+			user_id = user['user_id']
+			if self.add(user_id, token=account.token):
+				self.db.update_friend_status(1, user_id)
 			print('ACCOUNT PROCESSED\n')
 			time.sleep(random.randint(1, 10))
 

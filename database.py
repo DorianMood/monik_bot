@@ -12,6 +12,7 @@ CREATE_TABLES_SQL = '''
 class DataBase():
 	def __init__(self):
 		self.conn = self.create_connection()
+		self.conn.row_factory = sqlite3.Row
 		try:
 			self.create_tables()
 		except Exception as e:
