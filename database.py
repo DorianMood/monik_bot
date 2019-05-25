@@ -61,5 +61,8 @@ class DataBase():
 	def get_page(self, limit=10, page=0):
 		users = self.get_all()
 		return users[limit * page: limit * (page + 1)]
+	def remove(self, user_id):
+		c = self.conn.cursor()
+		c.execute("DELETE FROM users WHERE user_id='{}'".format(user_id))
 	def __del__(self):
 		self.conn.close()

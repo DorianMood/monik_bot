@@ -101,7 +101,7 @@ class Bot:
 	def get_number_by_id(self, user_id, token=None):
 		api = API(
 			token if token else self.ACCESS_TOKEN
-			#proxy=self.proxy[random.randint(0, len(self.proxy) - 1)]
+			#,proxy=self.proxy[random.randint(0, len(self.proxy) - 1)]
 		)
 		response = api.users_get(user_id)
 		try:
@@ -110,7 +110,7 @@ class Bot:
 		except Exception as e:
 			print('Ошибка получения id')
 			error_code = response['error']['error_code']
-			print(response)
+			print(response['error']['error_msg'])
 			if error_code == ERRORS['INVALID_USER']:
 				print('User not exists')
 			return False
@@ -122,35 +122,37 @@ class Bot:
 		response = api.friends_add(user_number)
 		try:
 			status = response['response']
-			return status
+			return {'success': status}
 		except Exception as e:
 			error_code = response['error']['error_code']
-			print(response)
-			status = error_code if not error_code in [1, 2, 4, 177] else 0
-			return status
+			print(response['error']['error_msg'])
+			status = error_code if not error_code in [1, 2, 4] else 0
+			return {'error': status}
 	def add(self, user, token=None):
-		print('Processing user {}'.format(user))
+		print('processing user {}'.format(user))
 		user_number = self.get_number_by_id(user, token)
 		status = self.add_with_status(user_number, token)
 
-		if status in [1, 2, 4]:
-			print('~~~~~~ ОГОНЬ ~~~~~~')
+		if 'success' in status and status['success'] in [1, 2, 4]:
+			print('~~~~~~~~~~~~~~ ОГОНЬ ~~~~~~~~~~~~~~')
 		else:
-			if status == ERRORS['CAPTCHA']:
-				print('Captcha')
-			print('((( БРАТ НУ ТАК НЕ ПОЙДЕТ (((')
+			if status['error'] == 177:
+				print('removing user {}'.format(user))
+				self.db.remove(user)
+			print('~~~~~~ БРАТ НУ ТАК НЕ ПОЙДЕТ ~~~~~~')
 			return False
 		return True
 	def add_all_users(self):
-		print(datetime.datetime.now())
+		print('{}\n'.format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M")))
 		for account in self.accounts:
-			print('\nACCOUNT : {}'.format(account.user_id))
+			print('ACCOUNT : {}'.format(account.user_id))
 			user = self.next_user()
 			user_id = user['user_id']
 			if self.add(user_id, token=account.token):
 				self.db.update_friend_status(1, user_id)
 			print('ACCOUNT PROCESSED\n')
-			time.sleep(random.randint(1, 10))
+			time.sleep(random.randint(40, 60))
+		print('-' * 30)
 
 if __name__ == '__main__':
 	bot = Bot()
