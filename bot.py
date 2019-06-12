@@ -53,6 +53,14 @@ class API:
 			proxies=self.proxies
 			)
 		return r.json()
+	def friends_get(self, user_id):
+		url = 'https://api.vk.com/method/friends.get?user_id={}&access_token={}&count={}&v=5.92'\
+			.format(user_id, self.token, 10000)
+		r = requests.get(url,
+			headers=self.headers,
+			proxies=self.proxies
+			)
+		return r.json()
 
 
 class Bot:
@@ -76,6 +84,20 @@ class Bot:
 				self.proxy = f.read().split('\n')
 	def init_DB(self):
 		self.db = DataBase()
+	def get_all_friends(self, user_id, token=None):
+		friends_ids = []
+		# make an request
+		api = API(
+			token if token else self.ACCESS_TOKEN
+			#,proxy=self.proxy[random.randint(0, len(self.proxy) - 1)]
+		)
+		response = api.friends_get(user_id)
+		print(response)
+		try:
+			friends_ids = response["response"]["items"]
+		except Exception as e:
+			print(e)
+		return friends_ids
 	def get_all_users(self):
 		return self.db.get_all()
 	def add_all_with_timer(self, timer):
@@ -119,6 +141,10 @@ class Bot:
 			token if token else self.ACCESS_TOKEN,
 			proxy=self.proxy[random.randint(0, len(self.proxy) - 1)]
 		)
+		for account in self.accounts:
+			friends_requests = self.get_all_friends(account.user_number, account.token)
+			if user_number in friends_requests:
+				return {'error': 14228}
 		response = api.friends_add(user_number)
 		try:
 			status = response['response']
@@ -128,17 +154,20 @@ class Bot:
 			print(response['error']['error_msg'])
 			status = error_code if not error_code in [1, 2, 4] else 0
 			return {'error': status}
-	def add(self, user, token=None):
-		print('processing user {}'.format(user))
-		user_number = self.get_number_by_id(user, token)
+	def add(self, user_id, token=None):
+		print('processing user {}'.format(user_id))
+		user_number = self.get_number_by_id(user_id, token)
 		status = self.add_with_status(user_number, token)
 
 		if 'success' in status and status['success'] in [1, 2, 4]:
 			print('~~~~~~~~~~~~~~ ОГОНЬ ~~~~~~~~~~~~~~')
 		else:
 			if status['error'] == 177:
-				print('removing user {}'.format(user))
-				self.db.remove(user)
+				print('removing user {}'.format(user_id))
+				self.db.remove(user_id)
+			elif status['error'] == 14228:
+				print('user {} already added'.format(user_id))
+				self.db.update_friend_status(1, user_id)
 			print('~~~~~~ БРАТ НУ ТАК НЕ ПОЙДЕТ ~~~~~~')
 			return False
 		return True
@@ -156,6 +185,9 @@ class Bot:
 
 if __name__ == '__main__':
 	bot = Bot()
-	bot.add_all_users()
+	#bot.add_all_users()
+
+	print(bot.get_all_friends("430088300"))
+
 	#bot.add(user=input('Input user: '))
 	#bot.add_all_with_timer(30 * MINUTE)
